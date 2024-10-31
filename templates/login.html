@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Login Into  the Inventory Management System</h1>
+<form action="/login" method="post">
+    <label for="username">username:</label>
+    <input type="text" id="username" name="username" required><br>
+    
+    <label for="password">password:</label>
+    <input type="password" id="password" name="password" required><br>
+    
+    <button type="btn btn-primary">login</button>
+    
+    <div class="input-group input-group-sm mb-3">
+        <span class="input-group-text" id="inputGroup-sizing-sm">username</span>
+        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+    </div>
+    <div class="input-group input-group-sm mb-3">
+        <span class="input-group-text" id="inputGroup-sizing-sm">password</span>
+        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+    </div>
+</form>
+
+{% endblock %}

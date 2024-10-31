@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="header" style="display: flex; justify-content: space-between; margin-bottom: 30px; padding: 0 15px;" class="bg-primary-subtle">
+    <span style="font-size: x-large;">Inventory Management System</span>
+    <button class="btn btn-link">Logout</button>
+</div>
+<div id="body" style="margin: 0 15px;">
+  
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+          {% endfor %}
+      {% endif %}
+    {% endwith %}  
+
+    <h4>Product List</h4>
+    <table class="table table-striped" style="margin-bottom: 40px;">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Actions</th>·
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.description }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>{{ product.price }}</td>
+                <td>
+                    <form action="{{ url_for('update_product', id=product.id) }}" method="post" style="display: inline-block;">
+                        <input type="text" name="name" placeholder="Name" value="{{ product.name }}" required>
+                        <input type="text" name="description" placeholder="Description" value="{{ product.description }}">
+                        <input type="number" name="quantity" placeholder="Quantity" value="{{ product.quantity }}" min="0">
+                        <input type="number" step="0.01" name="price" placeholder="Price" value="{{ product.price }}" min="0">
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+                    <form action="{{ url_for('delete_product', id=product.id) }}" method="post" style="display: inline-block;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h4>Add New Product</h4>
+    <div style="text-align: center; ">
+        <form action="{{ url_for('add_product') }}" method="post" style="display: inline-block;margin: 0 auto;">
+            <input type="text" name="name" placeholder="Name" required>
+            <input type="text" name="description" placeholder="Description">
+            <input type="number" name="quantity" placeholder="Quantity" min="0">
+            <input type="number" step="0.01" name="price" placeholder="Price" min="0">
+            <button type="submit" class="btn btn-primary">Add Product</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
