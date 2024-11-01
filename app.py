@@ -161,6 +161,7 @@ def update_product(id):
     flash("Product updated successfully")
     return redirect(url_for('index'))
 
+# Route to logout
 @app.route('/logout')
 def logout():
     session.pop('username', None)
