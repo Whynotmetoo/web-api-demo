@@ -2,7 +2,7 @@
 {% block content %}
 <div id="header" style="display: flex; justify-content: space-between; margin-bottom: 30px; padding: 0 15px;" class="bg-primary-subtle">
     <span style="font-size: x-large;">Inventory Management System</span>
-    <button class="btn btn-link">Logout</button>
+    <a href="{{ url_for('logout') }}" class="btn btn-link">Logout</a>
 </div>
 <div id="body" style="margin: 0 15px;">
   

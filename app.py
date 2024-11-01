@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g
+from functools import wraps
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
+import logging
 
 app = Flask(__name__)
 app.secret_key = 'inventory_secret_key'
@@ -39,19 +41,38 @@ def create_database_and_table():
 with app.app_context():
     create_database_and_table()
 
+def login_required(f):
+@wraps(f)
+def decorated_function(*args, **kwargs):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return f(*args, **kwargs)
+return decorated_function
+
 @app.route('/')
 def home():
     return render_template('login.html')
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST', 'GET'])
 def login():
-    username = request.form['username']
-    password = request.form['password']
-    session['username'] = username
-    # if username in users and users[username] == password:
-    #     session['username'] = username
-    return redirect(url_for('index'))
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        session['username'] = username
+        # if username in users and users[username] == password:
+        #     session['username'] = username
+        return redirect(url_for('index'))
+    return render_template('login.html')
     # return 'Login fail'
+
+@app.route('/signup', methods=['GET', 'POST'])
+def to_signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        logging.debug(username, password)
+        return redirect(url_for('login'))
+    return render_template('signup.html')
 
 # Route to display inventory
 @app.route('/main')
