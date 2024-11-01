@@ -2,3 +2,4 @@ Flask
 Flask-MySQLdb
 bcrypt
 gunicorn
+python-dotenv

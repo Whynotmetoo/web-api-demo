@@ -3,15 +3,19 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import bcrypt
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'inventory_secret_key'
 
 # MySQL configurations
-app.config['MYSQL_HOST'] = 'inventory-db.mysql.database.azure.com'
-app.config['MYSQL_USER'] = 'inventory_user'
-app.config['MYSQL_PASSWORD'] = 'management_key'
-app.config['MYSQL_DB'] = 'inventory_db'
+app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST')
+app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER')
+app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD')
+app.config['MYSQL_DB'] = os.environ.get('MYSQL_DB')
 
 mysql = MySQL(app)
 
