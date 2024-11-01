@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, g
 from functools import wraps
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
-import logging
+import bcrypt
 
 app = Flask(__name__)
 app.secret_key = 'inventory_secret_key'
@@ -18,13 +18,11 @@ mysql = MySQL(app)
 def create_database_and_table():
     cursor = mysql.connection.cursor()
     
-    # 创建数据库
     cursor.execute("CREATE DATABASE IF NOT EXISTS inventory_db")
     
-    # 切换到新创建的数据库
     cursor.execute("USE inventory_db")
     
-    # 创建表
+    #create products table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS products (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -35,19 +33,27 @@ def create_database_and_table():
         )
     """)
     
+    #create users table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(100) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL
+        )
+    """)
+    
     cursor.close()
 
-# create schema and table in the initialization session
 with app.app_context():
     create_database_and_table()
 
 def login_required(f):
-@wraps(f)
-def decorated_function(*args, **kwargs):
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    return f(*args, **kwargs)
-return decorated_function
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/')
 def home():
@@ -58,24 +64,48 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        session['username'] = username
-        # if username in users and users[username] == password:
-        #     session['username'] = username
-        return redirect(url_for('index'))
+        if not username or not password:
+            flash("Username and password cannot be empty", "error")
+            return redirect(url_for('login'))
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        user = cursor.fetchone()
+        
+        if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+            session['username'] = username
+            return redirect(url_for('index'))
+        else:
+            flash("Invalid username or password", "error")
+            return redirect(url_for('login'))
     return render_template('login.html')
-    # return 'Login fail'
 
+# sign up page and request
 @app.route('/signup', methods=['GET', 'POST'])
 def to_signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        logging.debug(username, password)
-        return redirect(url_for('login'))
+        if not username or not password:
+            flash("Username and password cannot be empty", "error")
+            return redirect(url_for('to_signup'))
+        
+        # Hash the password
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        
+        cursor = mysql.connection.cursor()
+        try:
+            cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
+            mysql.connection.commit()
+            flash("Sign up successful, please log in", "success")
+            return redirect(url_for('login'))
+        except Exception as e:
+            flash("Username already exists", "error")
+            return redirect(url_for('to_signup'))
     return render_template('signup.html')
 
 # Route to display inventory
 @app.route('/main')
+@login_required
 def index():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("SELECT * FROM products")
@@ -84,6 +114,7 @@ def index():
 
 # Route to add a new product
 @app.route('/add', methods=['POST'])
+@login_required
 def add_product():
     name = request.form['name']
     description = request.form['description']
@@ -99,6 +130,7 @@ def add_product():
 
 # Route to delete a product
 @app.route('/delete/<int:id>', methods=['POST'])
+@login_required
 def delete_product(id):
     cursor = mysql.connection.cursor()
     cursor.execute("DELETE FROM products WHERE id = %s", (id,))
@@ -108,6 +140,7 @@ def delete_product(id):
 
 # Route to update product details
 @app.route('/update/<int:id>', methods=['POST'])
+@login_required
 def update_product(id):
     name = request.form['name']
     description = request.form['description']
@@ -130,4 +163,4 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)

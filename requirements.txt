@@ -1,3 +1,4 @@
 Flask
 Flask-MySQLdb
-Flask-WTF
+bcrypt
+gunicorn
