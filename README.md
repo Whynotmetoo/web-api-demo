@@ -33,7 +33,7 @@ This demo uses Azure. If using another cloud service platform, please make the n
 2. Under the Settings -> Environment variables of your web app, add your mysql connection authentication keys and values
 ### Pipeline
 1. Fork this repository
-2. Go to Deployment Center of you Azure web app, connect your Github repository to this app in the Source section, Azure will automatically configure the Repository secrets and Actions for you under the repository.
+2. Go to Deployment Center of you Azure web app, connect your GitHub repository to this app in the Source section, Azure will automatically configure the Repository secrets and Actions for you under the repository.
 ### Push and Test
 1. Clone the repository to your local machine, conduct some modifications at your will, push the code
 2. Check the pipeline status, when it's done, use the Default domain presented on the Azure web app page to access your application
